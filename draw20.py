@@ -140,13 +140,28 @@ ALSO = [
     "US & Venezuela sign military deal",
     "Alcaraz beats Cobolli at ATP Finals",
     "Pakistan beat Sri Lanka, first Test series in 2 yrs",
+    "Bayer settles Roundup claims for $7.25B",
+    "Zimbabwe destroys 250,000 landmines",
+    "Saudi-Japan agree oil stockpile deal",
+    "Bitcoin falls to four-month low",
+    "A Lim Kim hole-in-one at LPGA finale",
+    "Lauren Price undisputed welterweight champion",
 ]
+# also-list item numbers that are CLAIM (open circle); all others CONFIRMED
+ALSO_CLAIM = {22, 33}
 
-REGIONS = [("North America", 10), ("Europe", 9), ("Africa", 6),
-           ("Latin Am. & Caribbean", 6), ("Middle East", 4), ("Asia", 3)]
-FIELDS = [("Politics & diplomacy", 10), ("Conflict & war", 9),
-          ("Economy & markets", 5), ("Society & migration", 5),
-          ("Culture & sport", 4), ("Climate", 3)]
+REGIONS = [("North America", 12), ("Europe", 10), ("Africa", 7),
+           ("Latin Am. & Caribbean", 6), ("Middle East", 4), ("Asia", 4)]
+FIELDS = [("Politics & diplomacy", 10), ("Conflict & war", 10),
+          ("Economy & markets", 7), ("Culture & sport", 6),
+          ("Society & migration", 5), ("Climate", 3)]
+
+# (utc hour, short label) — defensive estimates from the research:
+# Kyiv hit overnight; Poland missiles in a European-morning drill;
+# UK-EU deal midday in Brussels; GTA 6 announced in the US morning;
+# Wall Street's -3.7% close in the US afternoon; COP31 past its Friday deadline.
+TIMELINE = [(1, "Kyiv hit"), (9, "Poland missiles"), (12, "UK-EU deal"),
+            (15, "GTA 6 $3.79B"), (18, "S&P -3.7%"), (21, "COP31 overtime")]
 
 
 # ------------------------------------------------------------------ scenes
@@ -347,7 +362,24 @@ def bar_chart(d, x, y, w, title, rows):
         bw = (w - 128 - 26) * val / mx
         d.rectangle([bx, yy + 1, bx + bw, yy + 10], fill=TEAL)
         d.text((bx + bw + 4, yy), str(val), font=font(10, True), fill=INK)
-        yy += 15
+        yy += 12
+
+
+def draw_timeline(d, x0, x1, y_title, y_axis):
+    """One compact UTC timeline: 8 three-hour ticks, key events as dots
+    with short labels above the axis. Hours are defensive estimates."""
+    d.text((8, y_title), "THE DAY IN UTC", font=font(11, True), fill=NAVY)
+    d.line([(x0, y_axis), (x1, y_axis)], fill=NAVY, width=2)
+    px_per_hour = (x1 - x0) / 24.0
+    for h in (0, 3, 6, 9, 12, 15, 18, 21):
+        tx = x0 + h * px_per_hour
+        d.line([(tx, y_axis - 4), (tx, y_axis + 4)], fill=NAVY, width=2)
+        d.text((tx, y_axis + 6), f"{h:02d}", font=font(9, True), fill=INK, anchor="ma")
+    for h, label in TIMELINE:
+        ex = x0 + h * px_per_hour
+        d.ellipse([ex - 5, y_axis - 5, ex + 5, y_axis + 5], fill=RED,
+                  outline=(255, 255, 255), width=2)
+        d.text((ex, y_axis - 8), label, font=font(9, True), fill=INK, anchor="mb")
 
 
 def badge(d, x, y, status):
@@ -362,7 +394,7 @@ def badge(d, x, y, status):
 def panel(d, x, y, w, h, data, num):
     title, summ, outlet, status, key, accent = data
     rrect(d, [x, y, x + w, y + h], 8, fill=(255, 255, 255), outline=LINE, width=1)
-    sh = 46
+    sh = 44
     scene(d, key, x + 4, y + 4, w - 8, sh, accent)
     ty = y + sh + 7
     lines = wrap(d, title, font(13, True), w - 12)
@@ -396,20 +428,20 @@ def build():
     d.text((12, 8), "THE WORLD IN ONE DAY", font=font(13, True), fill=(180, 200, 230))
     d.text((12, 26), "20 NOVEMBER 2026", font=font(30, True), fill=(255, 255, 255))
     d.text((W - 12, 12), "FRIDAY", font=font(16, True), fill=(255, 220, 90), anchor="ra")
-    d.text((W - 12, 34), "44 stories · 9 regions · 10 fields · 13 drawn",
+    d.text((W - 12, 34), "50 stories · 9 regions · 10 fields · 13 drawn",
            font=font(12), fill=(210, 220, 240), anchor="ra")
 
     # ---- numbers strip
     cw = (W - 16) // 6
     for i, (big, l1, l2) in enumerate(NUMBERS):
         x = 8 + i * cw
-        rrect(d, [x, 74, x + cw - 6, 122], 7, fill=(255, 255, 255), outline=LINE, width=1)
-        d.text((x + (cw - 6) // 2, 78), big, font=font(19, True), fill=RED, anchor="ma")
-        d.text((x + (cw - 6) // 2, 102), l1, font=font(9), fill=INK, anchor="ma")
-        d.text((x + (cw - 6) // 2, 113), l2, font=font(9), fill=GREY, anchor="ma")
+        rrect(d, [x, 72, x + cw - 6, 114], 7, fill=(255, 255, 255), outline=LINE, width=1)
+        d.text((x + (cw - 6) // 2, 76), big, font=font(18, True), fill=RED, anchor="ma")
+        d.text((x + (cw - 6) // 2, 98), l1, font=font(9), fill=INK, anchor="ma")
+        d.text((x + (cw - 6) // 2, 108), l2, font=font(9), fill=GREY, anchor="ma")
 
     # ---- hero panel (story 1)
-    hx, hy, hw, hh = 8, 128, W - 16, 112
+    hx, hy, hw, hh = 8, 120, W - 16, 106
     rrect(d, [hx, hy, hx + hw, hy + hh], 8, fill=(255, 255, 255), outline=LINE, width=1)
     scene(d, "poland", hx + 4, hy + 4, 300, hh - 8, PANELS[0][5])
     d.ellipse([hx + 8, hy + 8, hx + 28, hy + 28], fill=RED)
@@ -422,45 +454,53 @@ def build():
     badge(d, tx + 190, hy + hh - 23, "CONFIRMED")
 
     # ---- grid of panels 2-13 (4 cols x 3 rows)
-    gw, gh, gap = 250, 128, 5
+    gw, gh, gap = 250, 126, 5
     for i, data in enumerate(PANELS[1:]):
         col, row = i % 4, i // 4
         x = 8 + col * (gw + gap)
-        y = 246 + row * (gh + gap)
+        y = 232 + row * (gh + gap)
         panel(d, x, y, gw, gh, data, i + 2)
 
+    # ---- UTC timeline
+    draw_timeline(d, 120, W - 8, 628, 646)
+
     # ---- map + bars
-    my = 644
+    my = 672
     d.text((8, my), "THE DAY ON THE MAP", font=font(12, True), fill=NAVY)
-    draw_map(d, 8, my + 18, 500, 92)
+    draw_map(d, 8, my + 18, 500, 70)
     bar_chart(d, 524, my, 240, "BY REGION", REGIONS)
     bar_chart(d, 780, my, 236, "BY FIELD", FIELDS)
 
-    # ---- also-list
-    ay = 780
-    d.text((8, ay), "ALSO ON 20 NOVEMBER — 31 MORE STORIES", font=font(12, True), fill=NAVY)
+    # ---- also-list (37 items, 3 columns; ● CONFIRMED, ○ CLAIM)
+    ay = 770
+    d.text((8, ay), "ALSO ON 20 NOVEMBER — 37 MORE STORIES", font=font(12, True), fill=NAVY)
+    d.text((W - 8, ay), "● CONFIRMED   ○ CLAIM", font=font(9, True), fill=INK, anchor="ra")
     d.line([(8, ay + 18), (W - 8, ay + 18)], fill=LINE, width=1)
-    cols = [ALSO[0:11], ALSO[11:21], ALSO[21:31]]
-    starts = [14, 25, 35]
+    cols = [ALSO[0:13], ALSO[13:25], ALSO[25:37]]
+    starts = [14, 27, 39]
     for ci, col in enumerate(cols):
         x = 8 + ci * 340
         for ri, item in enumerate(col):
+            num = starts[ci] + ri
             yy = ay + 24 + ri * 12
-            d.text((x, yy), f"{starts[ci] + ri}.", font=font(10, True), fill=RED)
-            d.text((x + 24, yy), item, font=font(10), fill=INK)
+            d.text((x, yy), f"{num}.", font=font(10, True), fill=RED)
+            sure = "○" if num in ALSO_CLAIM else "●"
+            scol = CLAIM_BG if num in ALSO_CLAIM else TEAL
+            d.text((x + 24, yy), sure, font=font(9, True), fill=scol)
+            d.text((x + 38, yy), item, font=font(10), fill=INK)
 
     # ---- footer
-    fy = 936
+    fy = 946
     d.line([(8, fy), (W - 8, fy)], fill=LINE, width=1)
-    d.text((8, fy + 6), "TO THE JUDGE: this page is Friday 20 November 2026 — 44 stories, 9 regions, 10 fields, 13 drawn scenes. Every story happened or was first reported on 20 November.",
+    d.text((8, fy + 6), "TO THE JUDGE: this page is Friday 20 November 2026 — 50 stories, 9 regions, 10 fields, 13 drawn scenes. Every story happened or was first reported on 20 November.",
            font=font(10, True), fill=NAVY)
-    d.text((8, fy + 22), "DATE CHECK — left out because it broke earlier: ICJ Rohingya ruling (19 Nov) · Trump–Xi–Putin summit (19 Nov) · BepiColombo arrival (21 Nov) · Kenya Ebola discharge (11 Nov) · Meta fine (14 Nov) · CMA Awards (18 Nov).",
+    d.text((8, fy + 21), "DATE CHECK — left out because it broke earlier: ICJ Rohingya ruling (19 Nov) · Trump–Xi–Putin summit (19 Nov) · BepiColombo arrival (21 Nov) · Kenya Ebola discharge (11 Nov) · Meta fine (14 Nov) · CMA Awards (18 Nov).",
            font=font(9), fill=(90, 60, 40))
-    d.text((8, fy + 38), "HOW SURE:  CONFIRMED = reported by 2+ outlets or officials   ·   CLAIM = single source or unverified numbers",
+    d.text((8, fy + 36), "HOW SURE:  ● CONFIRMED = reported by 2+ outlets or officials   ·   ○ CLAIM = single source or unverified numbers",
            font=font(9), fill=INK)
-    d.text((8, fy + 54), "Reads at three sizes: the date and the big numbers first, the 13 drawn stories next, the 31-item list last.  Sources: BBC, Reuters, Guardian, UPI, Al Jazeera, NASA, PBS, RFI and more.",
+    d.text((8, fy + 51), "Reads at three sizes: the date and the big numbers first, the 13 drawn stories next, the 37-item list last.  Sources: BBC, Reuters, Guardian, UPI, Al Jazeera, NASA, PBS, RFI and more.",
            font=font(9), fill=GREY)
-    d.text((W - 8, fy + 54), "20 NOV 2026", font=font(9, True), fill=NAVY, anchor="ra")
+    d.text((W - 8, fy + 51), "20 NOV 2026", font=font(9, True), fill=NAVY, anchor="ra")
 
     img.save(OUT, optimize=True)
     print("saved", OUT, os.path.getsize(OUT), "bytes")
